@@ -25,3 +25,4 @@ This is a backend API project built with [Bun](https://bun.sh/), [ElysiaJS](http
     ```bash
     bun run src/index.ts
     ```
+## Documentation
