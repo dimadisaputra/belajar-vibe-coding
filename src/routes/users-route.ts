@@ -17,31 +17,19 @@ const authPlugin = (app: Elysia) =>
 export const usersRoute = new Elysia({ prefix: "/api/users" })
   .group("", (app) =>
     app.use(authPlugin)
-    .get("/current", async ({ token, set }) => {
-      try {
-        const user = await getCurrentUser(token);
-        return { data: user };
-      } catch (error: any) {
-        if (error.message === "Unauthorized or invalid token") {
-          set.status = 401;
-          return { error: error.message };
-        }
-        set.status = 500;
-        return { error: "Internal Server Error" };
+    .onError(({ error, set }) => {
+      if (error.message === "Unauthorized or invalid token") {
+        set.status = 401;
+        return { error: error.message };
       }
     })
-    .delete("/logout", async ({ token, set }) => {
-      try {
-        const result = await logoutUser(token);
-        return { data: result };
-      } catch (error: any) {
-        if (error.message === "Unauthorized or invalid token") {
-          set.status = 401;
-          return { error: error.message };
-        }
-        set.status = 500;
-        return { error: "Internal Server Error" };
-      }
+    .get("/current", async ({ token }) => {
+      const user = await getCurrentUser(token);
+      return { data: user };
+    })
+    .delete("/logout", async ({ token }) => {
+      const result = await logoutUser(token);
+      return { data: result };
     })
   )
   .post("/", async ({ body, set }) => {
