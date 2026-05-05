@@ -1,6 +1,13 @@
 import { Elysia, t } from "elysia";
 import { registerUser, loginUser, getCurrentUser, logoutUser } from "../services/users-service";
 
+/**
+ * Elysia plugin for extracting and validating the Bearer token from the Authorization header.
+ * 
+ * @param app - The Elysia app instance.
+ * @returns An Elysia app with the derived token.
+ * @throws Error if the token is missing or invalid.
+ */
 const authPlugin = (app: Elysia) =>
   app.derive(({ headers }) => {
     const authHeader = headers["authorization"];
@@ -14,6 +21,10 @@ const authPlugin = (app: Elysia) =>
     return { token };
   });
 
+/**
+ * Route handler for user-related endpoints.
+ * Includes routes for registration, login, getting the current user, and logout.
+ */
 export const usersRoute = new Elysia({ prefix: "/api/users" })
   .group("", (app) =>
     app.use(authPlugin)
@@ -26,10 +37,43 @@ export const usersRoute = new Elysia({ prefix: "/api/users" })
     .get("/current", async ({ token }) => {
       const user = await getCurrentUser(token);
       return { data: user };
+    }, {
+      response: {
+        200: t.Object({
+          data: t.Object({
+            id: t.Number(),
+            name: t.String(),
+            email: t.String(),
+            created_at: t.Nullable(t.Date())
+          })
+        }),
+        401: t.Object({
+          error: t.String()
+        })
+      },
+      detail: {
+        tags: ['Users'],
+        summary: 'Get Current User',
+        description: 'Get the profile information of the currently authenticated user.'
+      }
     })
     .delete("/logout", async ({ token }) => {
       const result = await logoutUser(token);
       return { data: result };
+    }, {
+      response: {
+        200: t.Object({
+          data: t.String()
+        }),
+        401: t.Object({
+          error: t.String()
+        })
+      },
+      detail: {
+        tags: ['Users'],
+        summary: 'Logout User',
+        description: 'Invalidate the user session/token.'
+      }
     })
   )
   .post("/", async ({ body, set }) => {
@@ -49,7 +93,23 @@ export const usersRoute = new Elysia({ prefix: "/api/users" })
       name: t.String(),
       email: t.String(),
       password: t.String()
-    })
+    }),
+    response: {
+      200: t.Object({
+        data: t.String()
+      }),
+      409: t.Object({
+        error: t.String()
+      }),
+      500: t.Object({
+        error: t.String()
+      })
+    },
+    detail: {
+      tags: ['Users'],
+      summary: 'Register User',
+      description: 'Register a new user account.'
+    }
   })
   .post("/login", async ({ body, set }) => {
     try {
@@ -67,5 +127,21 @@ export const usersRoute = new Elysia({ prefix: "/api/users" })
     body: t.Object({
       email: t.String(),
       password: t.String()
-    })
+    }),
+    response: {
+      200: t.Object({
+        data: t.String()
+      }),
+      401: t.Object({
+        error: t.String()
+      }),
+      500: t.Object({
+        error: t.String()
+      })
+    },
+    detail: {
+      tags: ['Users'],
+      summary: 'Login User',
+      description: 'Login with email and password to receive a token.'
+    }
   });
