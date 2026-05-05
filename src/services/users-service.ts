@@ -58,3 +58,32 @@ export const loginUser = async (email: string, password: string) => {
 
   return token;
 };
+
+export const getCurrentUser = async (token: string) => {
+  const [session] = await db
+    .select()
+    .from(sessions)
+    .where(eq(sessions.token, token))
+    .limit(1);
+
+  if (!session) {
+    throw new Error("Unauthorized or invalid token");
+  }
+
+  const [user] = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      created_at: users.createdAt,
+    })
+    .from(users)
+    .where(eq(users.id, session.userId))
+    .limit(1);
+
+  if (!user) {
+    throw new Error("Unauthorized or invalid token");
+  }
+
+  return user;
+};
