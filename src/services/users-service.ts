@@ -89,17 +89,11 @@ export const getCurrentUser = async (token: string) => {
 };
 
 export const logoutUser = async (token: string) => {
-  const [session] = await db
-    .select()
-    .from(sessions)
-    .where(eq(sessions.token, token))
-    .limit(1);
+  const result = await db.delete(sessions).where(eq(sessions.token, token));
 
-  if (!session) {
+  if (result.rowCount === 0) {
     throw new Error("Unauthorized or invalid token");
   }
-
-  await db.delete(sessions).where(eq(sessions.token, token));
 
   return "OK";
 };
