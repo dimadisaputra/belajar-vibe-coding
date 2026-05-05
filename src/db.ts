@@ -4,4 +4,7 @@ import * as schema from "./schema";
 
 const connectionString = process.env.DATABASE_URL!;
 const client = postgres(connectionString);
+/**
+ * Database instance using Drizzle ORM connected via Postgres.js.
+ */
 export const db = drizzle(client, { schema });

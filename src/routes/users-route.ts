@@ -1,6 +1,13 @@
 import { Elysia, t } from "elysia";
 import { registerUser, loginUser, getCurrentUser, logoutUser } from "../services/users-service";
 
+/**
+ * Elysia plugin for extracting and validating the Bearer token from the Authorization header.
+ * 
+ * @param app - The Elysia app instance.
+ * @returns An Elysia app with the derived token.
+ * @throws Error if the token is missing or invalid.
+ */
 const authPlugin = (app: Elysia) =>
   app.derive(({ headers }) => {
     const authHeader = headers["authorization"];
@@ -14,6 +21,10 @@ const authPlugin = (app: Elysia) =>
     return { token };
   });
 
+/**
+ * Route handler for user-related endpoints.
+ * Includes routes for registration, login, getting the current user, and logout.
+ */
 export const usersRoute = new Elysia({ prefix: "/api/users" })
   .group("", (app) =>
     app.use(authPlugin)

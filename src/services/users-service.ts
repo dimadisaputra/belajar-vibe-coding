@@ -5,6 +5,13 @@ import { randomUUID } from "node:crypto";
 
 export type CreateUser = typeof users.$inferInsert;
 
+/**
+ * Registers a new user.
+ * 
+ * @param data - The user creation data containing name, email, and password.
+ * @returns A confirmation string "OK".
+ * @throws Error if the email is already registered.
+ */
 export const registerUser = async (data: CreateUser) => {
   const { name, email, password } = data;
 
@@ -32,6 +39,14 @@ export const registerUser = async (data: CreateUser) => {
   return "OK";
 };
 
+/**
+ * Authenticates a user and creates a new session.
+ * 
+ * @param email - The user's email address.
+ * @param password - The user's password.
+ * @returns The generated session token.
+ * @throws Error if the email or password is incorrect.
+ */
 export const loginUser = async (email: string, password: string) => {
   const [user] = await db
     .select()
@@ -59,6 +74,13 @@ export const loginUser = async (email: string, password: string) => {
   return token;
 };
 
+/**
+ * Retrieves the currently authenticated user based on their session token.
+ * 
+ * @param token - The session token.
+ * @returns The user data excluding the password.
+ * @throws Error if the token is invalid or the user is not found.
+ */
 export const getCurrentUser = async (token: string) => {
   const [session] = await db
     .select()
@@ -88,6 +110,13 @@ export const getCurrentUser = async (token: string) => {
   return user;
 };
 
+/**
+ * Logs out a user by deleting their session.
+ * 
+ * @param token - The session token to invalidate.
+ * @returns A confirmation string "OK".
+ * @throws Error if the token is invalid.
+ */
 export const logoutUser = async (token: string) => {
   const result = await db.delete(sessions).where(eq(sessions.token, token));
 
